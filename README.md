@@ -12,10 +12,17 @@ use it.
 
 ## What I have shipped
 
-**SoloBusinessAI**, a production multi-agent platform for small businesses across eight
-verticals. Coordinated agents handle customer intake across chat, phone and web, launch sites,
-create marketing and complete recurring work, with bilingual journeys and human escalation.
-Live, taking payments, with real customers.
+**SoloBusinessAI**, a production multi-agent platform for small businesses. It began as eight
+named verticals and now serves **any small business, whether already trading or starting from
+nothing**. Every owner gets a team of six named agents to work alongside: a chief of staff, a
+support rep, a technical investigator, an ad creative director, a social media manager and a
+content writer. Behind them, customer intake runs across chat, phone and web, with bilingual
+journeys and human escalation. Live, taking payments, with real customers.
+
+Behind the product sits a second layer: twenty-four agents that build, support and market the
+platform itself, including a six-agent pipeline that stands up an entire new vertical from a
+single brief and will not call it live until the QA agent's smoke test passes against the real
+deployment.
 
 **Cura Mirai**, a model-agnostic governance layer that sits around any LLM and refuses to trust
 the model's own guardrails. Deterministic policy evaluation, a one-way escalation ratchet with
