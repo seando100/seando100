@@ -1,85 +1,142 @@
 # Sean Doherty
 
-I design and ship AI systems, and I have been doing the same job across two generations of the
-technology.
+Twenty years at the intersection of human understanding and technology, designing digital
+experiences across entertainment, gaming, travel, retail, financial services, insurance,
+healthcare, public services and automotive. The last eight on conversational, voice and
+intelligent systems. The last two building them hands-on.
 
-The first time round it was conversational assistants on Artificial Solutions Teneo, Google
-Dialogflow and Alexa, when the models were intent classifiers, the output was mediocre, and
-nobody in the business was asking for any of it. Assistants for roadside assistance, job search,
-rail and airline travel, hotels, wealth management, broadcast. The models have been replaced
-underneath me twice since. The problem has not changed: find where automation genuinely helps,
-build it, and get people to use it.
+I believe the best technology disappears into the experience, that AI should amplify empathy
+rather than replace it, and that innovation is measured by outcomes rather than novelty.
 
-Twenty years of product and design before that, which is mostly why I map a process before I
-touch it.
+I have been doing the same job across two generations of this technology. The first time round it
+was assistants on Artificial Solutions Teneo, Google Dialogflow and Alexa, when the models were
+intent classifiers, the output was mediocre and nobody in the business was asking. Roadside
+assistance, job search, rail and airline travel, hotels, wealth management, broadcast. The models
+have been replaced underneath me twice since. The problem has not changed: find where automation
+genuinely helps, build it, and get people to use it.
 
 ## What is running
 
 **SoloBusinessAI** gives a small business owner a team of six named agents: a chief of staff, a
 support rep, a technical investigator, an ad creative director, a social media manager and a
-content writer. Customer intake runs across phone, chat and web, bilingually, with a human
-escalation path. It started as eight professional verticals and now takes any small business,
-whether it is already trading or starting from nothing. Live, taking payments.
+content writer. Intake runs across phone, chat and web, bilingually, with human escalation. It
+started as eight professional verticals and now takes any small business, trading or starting from
+nothing. Live, taking payments.
 
-Behind it sit twenty-four more agents that build, support and market the platform. Six of those
-are a pipeline that stands up an entire new vertical from a single brief, and the last one is a
-QA agent with the authority to refuse. A vertical is not live until its smoke test passes against
-the real deployment.
+The platform runs on a workforce of twenty-four agents across four families: a spin-up pipeline,
+support, marketing and corporate. Six of them are the pipeline that stands up an entire vertical
+from a single brief, and the last agent in it is QA, with the authority to refuse.
+
+**Cura Mirai** is a governance kernel that sits around any model and does not trust its guardrails.
+Patent pending.
 
 **DXP Auditor** crawls a site and scores its digital experience across eighteen dimensions, one
 agent each, because accessibility needs a real browser and axe-core, performance needs Lighthouse,
-content quality needs a model reading actual copy, and security needs headers and TLS. Used
-commercially to audit national insurance carriers.
+content quality needs a model reading actual copy, and security needs headers and TLS.
 
-**Cura Mirai** is a governance layer that sits around any model and does not trust its guardrails.
-Deterministic policy evaluation, a one-way escalation ratchet, fail-closed on any model failure.
-The first application is child safety.
+**CrewRights AI** answers questions about a labour agreement, built so a confidently wrong answer
+is harder to produce than no answer.
 
-**CrewRights AI** answers questions about a labour agreement and is built so that a confidently
-wrong answer is harder to produce than no answer. It quotes only values that appear in the cited
-clause, states plainly when the contract does not cover something, and shows its citations rather
-than hiding them behind a disclosure.
+Most of this is commercial and private. What is public here is a subset.
 
-Most of this is commercial and private. What is public here is a subset, and I am glad to walk
-through any of it.
+## How I architect these
 
-## The thing I keep finding
+The Cura Mirai kernel is the clearest example, because the constraint was severe: it governs a
+model's behaviour and it cannot itself be a model. It is deterministic, auditable and
+model-agnostic by construction.
 
-Four times now, in unrelated systems, I have found something reporting success while doing
-nothing.
+Its modules separate along the lines of the decisions being made, not along the data:
 
-An accessibility suite ran on every push, printed its violations to the console, and passed,
-because nobody had written the assertion. Sixteen of seventeen pages were failing WCAG AA on
-colour contrast the whole time and CI stayed green. It surfaced only when someone went to put a
-compliance claim in writing and the claim got checked.
+| Module | Responsibility |
+|---|---|
+| Signal detector | Recognises indicators, with pluggable strategies |
+| Signal accumulator | Holds history so a pattern is distinguishable from an incident |
+| Policy registry | Loads packs, rules and their inheritance |
+| Policy evaluator | Decides what a set of signals licenses |
+| Escalation state machine | A one-way ratchet with irreversibility floors |
+| Consent enforcer | Gates everything on what was actually agreed |
+| Audit logger | Hash-chained, so the record cannot be quietly rewritten |
+| Jurisdiction resolver | Selects the rules that apply here |
+| Reasoning commissioner | Commissions bounded questions to a model and nothing more |
 
-A safety harness reported 100 percent detection and zero false positives. Both numbers were true
-and both were useless, because it measured whether a signal was detected and never whether it
-reached the person who needed it. Driving the real chain end to end found eighteen categories
-being dropped silently in between, including a child disclosing abuse producing no output at all.
+Two properties matter more than the module list. **Governance state is hidden from the model**, and
+the model is only ever asked bounded questions, because a component that can be argued with is not
+a safety control. And **any model failure resolves to maximum safety** rather than to silence.
 
-A scheduled research job ran every morning at six, exited zero, and stored nothing for seven
-weeks after its data source closed its API. One `sys.exit(0)` on an empty result was the whole
-bug. Windows reported success every day.
+The kernel runs on FastAPI and Pydantic and deliberately nothing else. No vendor SDK, raw HTTPS, so
+it stays portable across providers rather than inheriting whichever one it was written against.
 
-So: a green scorecard is not evidence, logging is not testing, and an exit code of zero means
-nothing unless something has proven it can be non-zero. The only reliable defence is a check you
-have watched go red.
+## Taxonomy and ontology, and how they meet
 
-## How I work
+These get used interchangeably and they are not the same thing. Getting the distinction right is
+most of what makes a domain system extensible.
 
-I write the instruction files that govern agent behaviour, decide what stays deterministic and
-what is safe to hand to judgement, connect the tools and data each agent needs, and own the
-evaluations that decide whether a change shipped or regressed.
+**The taxonomy names what can happen.** In Cura Mirai it runs across three axes rather than one
+list, because the mitigations differ. Axis A is the child's own indicators: self-harm, low mood,
+disordered eating, substance use, radicalisation, isolation, functional decline. Axis B is harm
+from others toward them: grooming, bullying, abuse, sextortion, neglect, coercion, exploitation.
+Axis C is risk in the system's own output, because a product that can cause harm has to appear in
+its own taxonomy. Axis C is openly the thinnest, and it is recorded as such rather than quietly
+omitted.
 
-Domain rules live in versioned data rather than in the code that reads them. In the audit system
-that means policy packs that extend one another and cite the bulletin or statute behind every
-regulatory claim, so pointing the engine at another jurisdiction is a file rather than a release.
-In the governance layer it means the same shape carrying a clinical screening protocol. The
-engine stays general and the knowledge is swapped.
+**The ontology declares what follows.** A policy pack carries far more than a rule list: a
+jurisdiction path, an authority tier, an instrument type, a pedigree, age bands, what it inherits,
+its source, a clarification protocol, and its crisis resources. Its indicators each bind to a
+taxonomy category and carry their own authority, source citation, guardrail and severity. Its rules
+carry a condition, the action triggered, and their detector dependencies.
 
-I hide state from the model where a component must not be argued out of its job, and I keep the
-questions put to it bounded for the same reason.
+So the join is explicit. The taxonomy supplies the nouns. The ontology says what each noun means
+here, on whose authority, for which ages, under which jurisdiction, and what it licenses the system
+to do. Adding a jurisdiction is a file. Adding an authority is a field. Neither is a release.
+
+One field in that structure matters more than it looks: `pedigree`. It records whether a pack was
+authored by a domain expert or extracted from source material. Most of them say `extracted`, which
+is a limitation the packs state about themselves rather than a claim they make.
+
+The same shape carries entirely different domains. In the audit system it holds web standards
+extended by platform rules, extended again by jurisdictional insurance regulation, where every
+regulatory claim cites the bulletin or statute behind it. Same engine, swapped knowledge.
+
+## What twenty years of design brings to this
+
+Research first. Accessibility by default. Privacy by design. Measure everything. Technology
+disappears. Ship, learn, repeat.
+
+Those are not slogans I picked up recently. They are why I map a process before I choose a tool,
+why the accessibility suite existed at all before anyone asked for it, and why the first question
+in an onboarding flow I built asks whether someone already has a business, because an existing
+operation and a standing start are not the same current state and cannot share a map.
+
+I have also built the apparatus around innovation rather than only doing it: a pipeline running
+from technology backlog through opportunity screening, concept development, rapid prototyping and
+subject-matter review to a decision to scale or retire, with a cross-functional expert panel
+reviewing each concept and delivery teams sized to the stage. Making innovation repeatable is a
+different discipline from being innovative, and organisations usually need the first one.
+
+Original research I have authored includes conversational AI design patterns for trust-sensitive
+and regulated environments, AI-driven experience personalisation, character-based digital
+assistants, and connected journeys across physical, mobile and virtual touchpoints.
+
+## What I check for now
+
+Three times, in unrelated systems, I have found something reporting success while doing nothing.
+
+An accessibility suite ran on every push, printed its violations to the console and passed, because
+nobody had written the assertion. Sixteen of seventeen pages were failing WCAG AA on colour
+contrast the whole time and CI stayed green. It surfaced only when someone went to put a compliance
+claim in writing and the claim got checked.
+
+A safety harness reported 100 percent detection and zero false positives. Both true, both useless,
+because it measured whether a signal was detected and never whether it reached the person who
+needed it. Eighteen categories were being dropped silently in between, including a child disclosing
+abuse producing no output at all.
+
+A scheduled research job ran every morning at six, exited zero and stored nothing for seven weeks
+after its data source closed its API. One `sys.exit(0)` on an empty result was the entire bug.
+
+So a green scorecard is not evidence, logging is not testing, and an exit code of zero means
+nothing until something has proven it can be non-zero. The only defence I trust is a check I have
+watched go red.
 
 ## Contact
 
